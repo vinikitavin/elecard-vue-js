@@ -102,6 +102,7 @@ export default {
   },
   async mounted() {
     try {
+      this.isLoading = true
       const response = await api.get('catalog.json')
       this.defaultCardArray = response.map((card, index) => {
         return {
@@ -115,6 +116,8 @@ export default {
       await this.$store.dispatch('changeCards', this.defaultCardArray)
     } catch (error) {
       console.log(error)
+    } finally {
+      this.isLoading = false
     }
   },
 }
