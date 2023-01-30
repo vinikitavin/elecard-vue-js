@@ -10,9 +10,14 @@
         <div class="item-content__img-wrapper">
           <img :src="`http://contest.elecard.ru/frontend_data/${card.image}`" alt="image" class="item-content__img"/>
         </div>
-        <p class="item-content__category">
-          Категория: {{ firstCursiveLetter(card.category) }}
-        </p>
+        <div class="item-content__description">
+          <p class="item-content__category">
+            Категория: {{ firstCursiveLetter(card.category) }}
+          </p>
+          <p class="item-content__date">
+            Дата: {{ timeConverter(card.timestamp) }}
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -27,11 +32,25 @@ export default {
       required: true,
     }
   },
+  computed: {
+    setCategory() {
+      this.firstCursiveLetter(this.card.category)
+    }
+  },
   methods: {
     firstCursiveLetter(word) {
       const firstLetterToUpperCase = word.split('')[0].toUpperCase();
       const restPartOfTheWord = word.slice(1);
       return firstLetterToUpperCase + restPartOfTheWord;
+    },
+    timeConverter(UNIX_timestamp) {
+      let a = new Date(UNIX_timestamp);
+      let months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+      let year = a.getFullYear();
+      let month = months[a.getMonth()];
+      let date = a.getDate();
+      let time = date + '.' + month + '.' + year;
+      return time;
     }
   },
 }
@@ -72,6 +91,10 @@ export default {
   &__img {
     max-width: 300px;
     max-height: 200px;
+  }
+
+  &__description {
+    padding: 10px;
   }
 }
 </style>

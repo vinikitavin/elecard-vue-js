@@ -1,5 +1,5 @@
 <template>
-  <main class="main">
+  <main ref="main" class="main">
     <div class="main__form radio">
       <div class="radio__wrapper" @click="radioValue = 'cards'">
         <TheRadioButton
@@ -22,26 +22,37 @@
       <TheSort @sort="getSortValue"/>
     </div>
     <div v-if="isLoading" class="main__spinner spinner">
-      <img src="@/assets/img/spinner.gif" alt="spinner"/>
+      <img alt="spinner" src="@/assets/img/spinner.gif"/>
     </div>
     <div v-else class="main__content content">
-      <div class="content__card">
+      <div v-if="radioValue === 'cards'" class="content__card">
         <TheMainCard
-            v-for="card in getFilteredCardsArray"
-            v-if="radioValue === 'cards'"
+            v-for="card in getPaginatedFilteredPage"
             :key="card.id"
             :card="card"
             @cardId="getClosedCards"
         />
       </div>
-      <div class="content__tree">
+      <div v-if="radioValue === 'tree'" class="content__tree">
         <TheMainTree
             v-for="card in getFilteredCardsArray"
-            v-if="radioValue === 'tree'"
             :key="card.id"
             :card="card"
         />
       </div>
+    </div>
+    <div v-if="radioValue === 'cards'" class="main__pagination pagination">
+      <button
+          :disabled="pageNumber === 0"
+          class="pagination__prev-btn btn"
+          @click="pageNumber--"
+      >Назад
+      </button>
+      <button :disabled="pageNumber >= getFilteredCardsArray.length / cardsPerPage"
+              class="pagination__next-btn btn"
+              @click="pageNumber++"
+      >Вперед
+      </button>
     </div>
   </main>
 </template>
@@ -49,8 +60,8 @@
 <script>
 import api from '@/api/axios'
 import TheRadioButton from "@/components/TheRadioButton";
-import TheMainCard from "@/components/TheMainCards";
-import TheMainTree from "@/components/TheMainTree";
+import TheMainCard from "@/components/TheMain/TheMainCards";
+import TheMainTree from "@/components/TheMain/TheMainTree";
 import TheSort from "@/components/TheSort";
 
 export default {
@@ -67,10 +78,18 @@ export default {
       sortedArray: '',
       closedCards: [],
       defaultCardArray: [],
-      isLoading: false
+      isLoading: false,
+      pageNumber: 0,
+      cardsPerPage: 6,
+      ro: null
     }
   },
   computed: {
+    getPaginatedFilteredPage() {
+      const start = this.pageNumber * this.cardsPerPage
+      const end = start + this.cardsPerPage
+      return this.getFilteredCardsArray.slice(start, end)
+    },
     getFilteredCardsArray() {
       return this.defaultCardArray
           // Sort filter
@@ -97,6 +116,9 @@ export default {
     getClosedCards(closedCard) {
       this.closedCards.push(closedCard)
     },
+    onResize() {
+      this.$emit('resize', this.$refs.main.offsetHeight)
+    },
   },
   created() {
   },
@@ -119,15 +141,20 @@ export default {
     } finally {
       this.isLoading = false
     }
+    this.ro = new ResizeObserver(this.onResize)
+    this.ro.observe(this.$refs.main)
+    // localStorage.setItem('cards', JSON.stringify(this.defaultCardArray))
   },
+  beforeDestroy() {
+    this.ro.unobserve(this.$refs.main)
+    // if (this.defaultCardArray.length !== this.getFilteredCardsArray.length) {
+    //   localStorage.setItem('cards', JSON.stringify(this.getFilteredCardsArray))
+    // }
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-.flip-list-move {
-  transition: transform 1s;
-}
-
 .main {
   flex: 1 1 auto;
 
@@ -146,6 +173,22 @@ export default {
     display: flex;
     justify-content: center;
   }
+
+  &__content {
+    margin-bottom: 30px;
+  }
+
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 100px;
+  }
+}
+
+.radio {
+  &__wrapper {
+    margin-right: 10px;
+  }
 }
 
 .content {
@@ -153,12 +196,40 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 90px;
   }
 
   &__card {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+.pagination {
+  &__prev-btn {
+    margin-right: 10px;
+  }
+}
+
+.btn {
+  border: 0.5px solid #3781EF;
+  background: #EFF5FC;
+  color: black;
+  padding: 5px 20px;
+
+  &:hover {
+    background: #3781EF;
+    color: white;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+
+  &:disabled:hover {
+    background: #EFF5FC;
+    color: black;
   }
 }
 </style>

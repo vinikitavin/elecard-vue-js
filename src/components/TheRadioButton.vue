@@ -38,6 +38,7 @@ export default {
 .radio {
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 
   & > input {
     position: absolute;
@@ -49,7 +50,6 @@ export default {
     display: inline-flex;
     align-items: center;
     user-select: none;
-    margin-right: 2rem;
   }
 
   & > span::before {

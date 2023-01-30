@@ -8,7 +8,7 @@
 
 <script>
 import TheHeader from "@/components/TheHeader";
-import TheMain from "@/components/TheMain";
+import TheMain from "@/components/TheMain/TheMain.vue";
 import TheFooter from "@/components/TheFooter";
 
 
