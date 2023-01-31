@@ -35,6 +35,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/_colors.scss';
+
 .radio {
   display: flex;
   flex-direction: column;
@@ -59,7 +61,7 @@ export default {
     height: 20px;
     flex-shrink: 0;
     flex-grow: 0;
-    border: 0.5px solid #EFF5FC;
+    border: 0.5px solid $light-blue;
     background-color: rgba(238, 246, 255, 0.5);
     border-radius: 50%;
     margin-right: 0.5em;
@@ -69,13 +71,13 @@ export default {
   }
 
   & > input:not(:disabled):not(:checked) + span:hover::before {
-    border-color: #3781EF;
+    border-color: $blue;
   }
 
   & > input:checked + span::before {
     content: '';
-    border-color: #3781EF;
-    background-color: #3781EF;
+    border-color: $blue;
+    background-color: $blue;
     transition: all 0.3s ease;
   }
 }

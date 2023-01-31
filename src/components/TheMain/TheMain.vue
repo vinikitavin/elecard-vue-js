@@ -21,6 +21,11 @@
     <div class="main__sort">
       <TheSort @sort="getSortValue"/>
     </div>
+    <transition>
+      <div class="main__reset">
+        <button :disabled="!isReset" @click="resetCardsArray" class="main__reset-btn">Сбросить</button>
+      </div>
+    </transition>
     <div v-if="isLoading" class="main__spinner spinner">
       <img alt="spinner" src="@/assets/img/spinner.gif"/>
     </div>
@@ -78,10 +83,10 @@ export default {
       sortedArray: '',
       closedCards: [],
       defaultCardArray: [],
+      isReset: false,
       isLoading: false,
       pageNumber: 0,
       cardsPerPage: 6,
-      ro: null
     }
   },
   computed: {
@@ -115,46 +120,47 @@ export default {
     },
     getClosedCards(closedCard) {
       this.closedCards.push(closedCard)
+      localStorage.setItem('cards', JSON.stringify(this.getFilteredCardsArray))
+      this.isReset = true
     },
-    onResize() {
-      this.$emit('resize', this.$refs.main.offsetHeight)
-    },
-  },
-  created() {
+    resetCardsArray() {
+      localStorage.removeItem('cards')
+      this.isReset = false
+      location.reload()
+    }
   },
   async mounted() {
-    try {
-      this.isLoading = true
-      const response = await api.get('catalog.json')
-      this.defaultCardArray = response.map((card, index) => {
-        return {
-          id: index + 1,
-          image: card.image,
-          filesize: card.filesize,
-          timestamp: card.timestamp,
-          category: card.category
-        }
-      })
+    if (!localStorage.getItem('cards')) {
+      try {
+        this.isLoading = true
+        const response = await api.get('catalog.json')
+        this.defaultCardArray = response.map((card, index) => {
+          return {
+            id: index + 1,
+            image: card.image,
+            filesize: card.filesize,
+            timestamp: card.timestamp,
+            category: card.category
+          }
+        })
+        await this.$store.dispatch('changeCards', this.defaultCardArray)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.isLoading = false
+      }
+    } else {
+      this.defaultCardArray = JSON.parse(localStorage.getItem('cards'))
       await this.$store.dispatch('changeCards', this.defaultCardArray)
-    } catch (error) {
-      console.log(error)
-    } finally {
-      this.isLoading = false
+      this.isReset = true
     }
-    this.ro = new ResizeObserver(this.onResize)
-    this.ro.observe(this.$refs.main)
-    // localStorage.setItem('cards', JSON.stringify(this.defaultCardArray))
   },
-  beforeDestroy() {
-    this.ro.unobserve(this.$refs.main)
-    // if (this.defaultCardArray.length !== this.getFilteredCardsArray.length) {
-    //   localStorage.setItem('cards', JSON.stringify(this.getFilteredCardsArray))
-    // }
-  }
 }
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/_colors.scss';
+
 .main {
   flex: 1 1 auto;
 
@@ -166,16 +172,43 @@ export default {
   &__sort {
     display: flex;
     justify-content: center;
-    padding: 20px 0;
+    padding: 10px 0;
+  }
+
+  &__sort {
+    padding: 10px 0 0 0;
+  }
+
+  &__reset {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__reset-btn {
+    width: 138px;
+    border: 1px solid $black;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: 0.4s;
+  }
+
+  &__reset-btn:disabled {
+    background: $black;
+    color: $white;
+    opacity: 0.5;
   }
 
   &__spinner {
     display: flex;
     justify-content: center;
+    padding: 130px 0;
   }
 
   &__content {
-    margin-bottom: 30px;
+    max-width: 1000px;
+    margin: 0 auto 30px auto;
   }
 
   &__pagination {
@@ -213,14 +246,17 @@ export default {
 }
 
 .btn {
-  border: 0.5px solid #3781EF;
-  background: #EFF5FC;
-  color: black;
+  border: 0.5px solid $blue;
+  border-radius: 5px;
+  background: $light-blue;
+  color: $black;
   padding: 5px 20px;
+  transition: 0.6s;
+
 
   &:hover {
-    background: #3781EF;
-    color: white;
+    background: $blue;
+    color: $white;
   }
 
   &:disabled {
@@ -228,8 +264,18 @@ export default {
   }
 
   &:disabled:hover {
-    background: #EFF5FC;
-    color: black;
+    background: $light-blue;
+    color: $black;
   }
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 </style>

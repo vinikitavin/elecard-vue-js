@@ -1,8 +1,8 @@
 <template>
   <div class="sort">
-    <div @click="isOpened = !isOpened" class="sort__menu">Сортировать</div>
+    <div class="sort__menu" @click="isOpened = !isOpened">Сортировать</div>
     <div v-show="isOpened" class="sort__content">
-      <div class="sort__radio" @click="sortedByCategory">
+      <div class="sort__radio" @click="sortedByValue('category')">
         <TheRadioButton
             :default-selected="''"
             :name="'sort'"
@@ -10,7 +10,7 @@
             :value="'category'"
         />
       </div>
-      <div class="sort__radio" @click="sortedByTimestamp">
+      <div class="sort__radio" @click="sortedByValue('timestamp')">
         <TheRadioButton
             :default-selected="''"
             :name="'sort'"
@@ -18,7 +18,7 @@
             :value="'timestamp'"
         />
       </div>
-      <div class="sort__radio" @click="sortedByImage">
+      <div class="sort__radio" @click="sortedByValue('image')">
         <TheRadioButton
             :default-selected="''"
             :name="'sort'"
@@ -26,7 +26,7 @@
             :value="'image'"
         />
       </div>
-      <div class="sort__radio" @click="sortedByFilesize">
+      <div class="sort__radio" @click="sortedByValue('filesize')">
         <TheRadioButton
             :default-selected="''"
             :name="'sort'"
@@ -43,37 +43,34 @@ import TheRadioButton from "@/components/TheRadioButton";
 
 export default {
   name: "TheSort",
-  components: {TheRadioButton},
+  components: { TheRadioButton },
   data() {
     return {
       isOpened: false,
-      radioValue: '',
+      radioValue: ''
     }
   },
   computed: {},
   methods: {
-    // getRadioValue(data) {
-    //   this.radioValue = data
-    // },
-    sortedByCategory() {
+    sortedByValue(value) {
       const cards = this.$store.getters.getCards
-      const sortedCards = cards.sort((a, b) => a.category > b.category ? 1 : -1)
-      this.$emit('sort', sortedCards)
-    },
-    sortedByTimestamp() {
-      const cards = this.$store.getters.getCards
-      const sortedCards = cards.sort((a, b) => a.timestamp > b.timestamp ? 1 : -1)
-      this.$emit('sort', sortedCards)
-    },
-    sortedByImage() {
-      const cards = this.$store.getters.getCards
-      const sortedCards = cards.sort((a, b) => a.image.split('/')[1] > b.image.split('/')[1] ? 1 : -1)
-      this.$emit('sort', sortedCards)
-    },
-    sortedByFilesize() {
-      const cards = this.$store.getters.getCards
-      const sortedCards = cards.sort((a, b) => a.filesize > b.filesize ? 1 : -1)
-      this.$emit('sort', sortedCards)
+      if (value === 'image') {
+        const sortedCards = cards.sort((a, b) =>
+            a.image.split('/')[1]
+            > b.image.split('/')[1]
+                ? 1
+                : -1
+        )
+        this.$emit('sort', sortedCards)
+      } else {
+        const sortedCards = cards.sort((a, b) =>
+            a[value]
+            > b[value]
+                ? 1
+                : -1
+        )
+        this.$emit('sort', sortedCards)
+      }
     },
     hideSortMenu() {
       this.isOpened = false
@@ -89,12 +86,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/_colors.scss';
+
 .sort {
   position: relative;
 
   &__menu {
     width: 138px;
-    border: 1px solid black;
+    border: 1px solid $black;
+    border-radius: 5px;
     text-align: center;
     margin-bottom: 5px;
     cursor: pointer;
@@ -102,9 +102,10 @@ export default {
 
   &__content {
     position: absolute;
-    border: 1px solid black;
+    border: 1px solid $black;
+    border-radius: 5px;
     padding: 20px;
-    background: white;
+    background: $white;
     z-index: 999;
   }
 }

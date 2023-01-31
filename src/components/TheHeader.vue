@@ -13,13 +13,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/scss/_colors.scss';
+
 .header {
   position: fixed;
   width: 100% ;
   top: 0;
   left: 0;
   box-shadow: 0 0 10px 2px rgb(0 0 0 / 50%);
-  background-color: white;
+  background-color: $white;
   z-index: 99;
 
   &__content {
